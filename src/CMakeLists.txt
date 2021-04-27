@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
 
-add_executable( ${PROJECT_NAME}_app main.cpp
-                                    MyClass.cpp)
+set(EXECUTABLE_NAME ${PROJECT_NAME}_app)
+add_executable( ${EXECUTABLE_NAME} main.cpp
+                                   MyClass.cpp)

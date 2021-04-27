@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION 3.19)
 
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        # Specify the commit you depend on and update it regularly.
-        URL https://github.com/google/googletest/archive/release-1.10.0.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+set(EXECUTABLE_NAME ${PROJECT_NAME}_app_tests)
+add_executable(${EXECUTABLE_NAME} src/main.cpp
+                                  src/ApplicationTests.cpp
+                                  ${PROJECT_SOURCE_DIR}/src/MyClass.cpp)
 
-add_executable(${PROJECT_NAME}_app_tests src/main.cpp
-                                         src/ApplicationTests.cpp
-                                         ../../src/MyClass.cpp)
+target_include_directories(${EXECUTABLE_NAME}
+                            PUBLIC  ${PROJECT_SOURCE_DIR}/src
+                            PUBLIC  ${PROJECT_SOURCE_DIR}/ext/googletest/googletest/include
+                            PUBLIC  ${PROJECT_SOURCE_DIR}/ext/googletest/googlemock/include
+                            PUBLIC  ${PROJECT_SOURCE_DIR}/ext/matplotlibcpp)
 
-target_link_libraries(${PROJECT_NAME}_app_tests gtest_main)
-add_test(NAME example_test COMMAND ApplicationTests)
+target_link_directories(${EXECUTABLE_NAME}
+                        PRIVATE  ${PROJECT_SOURCE_DIR}/ext/googletest/googletest/src
+                        PRIVATE  ${PROJECT_SOURCE_DIR}/ext/googletest/googletest/src)
+
+target_link_libraries(${EXECUTABLE_NAME} gtest_main matplotlib_cpp)
+#add_test(NAME example_test COMMAND ${PROJECT_NAME}_app_tests)
