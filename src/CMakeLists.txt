@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.19)
-project(MyProject)
 
-add_executable( Application
-        main.cpp
-        MyClass.cpp)
+add_executable( ${PROJECT_NAME}_app main.cpp
+                                    MyClass.cpp)
