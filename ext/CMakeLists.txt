@@ -21,3 +21,4 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/matplotlibcpp/CMakeLists.txt")
     message(FATAL_ERROR "The submodule matplotlibcpp was not downloaded. Submodule turned of or failed.")
 endif()
 add_subdirectory(matplotlibcpp/)
+
