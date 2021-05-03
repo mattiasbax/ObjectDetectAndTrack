@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include "MyClass.h"
 
 TEST(MyClass, defaultConstruction) {
     constexpr int initValue = 5;

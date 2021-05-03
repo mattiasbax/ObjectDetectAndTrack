@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 set(EXECUTABLE_NAME ${PROJECT_NAME}_app_tests)
 add_executable(${EXECUTABLE_NAME} src/main.cpp
                                   src/ApplicationTests.cpp
-                                  ${PROJECT_SOURCE_DIR}/src/MyClass.cpp)
+        )
 
 target_include_directories(${EXECUTABLE_NAME}
                             PUBLIC  ${PROJECT_SOURCE_DIR}/src

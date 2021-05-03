@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <opencv2/video/tracking.hpp>
+#include <opencv2/tracking/tracker.hpp>
 
 class ObjectTrackerHandler {
 public:

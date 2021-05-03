@@ -12,7 +12,23 @@ cv::Ptr<cv::Tracker> ObjectTrackerFactory::getTracker() const
         case TrackerType::GOTURN:
             tracker = cv::TrackerGOTURN::create();
             break;
-        default:
+        case TrackerType::BOOSTING:
+            tracker = cv::TrackerBoosting::create();
+            break;
+        case TrackerType::MEDIANFLOW:
+            tracker = cv::TrackerMedianFlow::create();
+            break;
+        case TrackerType::TLD:
+            tracker = cv::TrackerTLD::create();
+            break;
+        case TrackerType::KCF:
+            tracker = cv::TrackerKCF::create();
+            break;
+        case TrackerType::MOSSE:
+            tracker = cv::TrackerMOSSE::create();
+            break;
+        case TrackerType::CSRT:
+            tracker = cv::TrackerCSRT::create();
             break;
     }
     return tracker;

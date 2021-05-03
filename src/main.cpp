@@ -8,26 +8,35 @@
 #include <string>
 #include "ObjectTrackerFactory.h"
 #include "ObjectTrackerHandler.h"
-#include "MyClass.h"
 
 int main() {
     // Activate the camera
-    //cv::VideoCapture camera(0);
-    //if (!camera.isOpened())
-    //{
-    //    std::cout << "Cannot open camera feed" << std::endl;
-    //    return 1;
-    //}
+    cv::VideoCapture camera(0);
+    if (!camera.isOpened())
+    {
+        std::cout << "Cannot open camera feed" << std::endl;
+        return 1;
+    }
+    constexpr int ESC = 27;
+    cv::Mat cameraFrame;
+    while (camera.read(cameraFrame))
+    {
+        cv::namedWindow("Camera Feed", cv::WindowFlags::WINDOW_AUTOSIZE); // Create a window for display.
+        cv::imshow("Camera Feed", cameraFrame); // Show our image inside it.
+        const int keyPress = cv::waitKey(1); // Wait for a keystroke in the window
+        if (keyPress == ESC)
+        {
+            break;
+        }
+    }
 
-    const ObjectTrackerFactory otf(ObjectTrackerFactory::TrackerType::MIL);
+
+    const ObjectTrackerFactory otf(ObjectTrackerFactory::TrackerType::KCF);
     ObjectTrackerHandler oth(otf.getTracker(), ObjectTrackerHandler::Parameters());
 
-    MyClass myClass(8);
-    std::cout << "Hello, World: " << myClass.getMyInt() << std::endl;
-
-    const std::string imgPath = "C:/Users/Mattias/CLionProjects/LearningOpenCV/src/images/starryNight.png";
+    //const std::string imgPath = "C:/Users/Mattias/CLionProjects/LearningOpenCV/src/images/starryNight.png";
     cv::Mat img;
-    img = cv::imread(imgPath, cv::ImreadModes::IMREAD_COLOR); // Read the file
+    //img = cv::imread(imgPath, cv::ImreadModes::IMREAD_COLOR); // Read the file
     if (img.empty())
     {
         std::cout << "Could not read image" << std::endl;
