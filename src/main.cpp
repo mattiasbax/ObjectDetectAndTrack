@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <filesystem>
 #include "ObjectTrackerFactory.h"
 #include "ObjectTrackerHandler.h"
 
@@ -240,16 +241,22 @@ int main() {
     // Setup the yolo network
     constexpr auto prefTarget = cv::dnn::DNN_TARGET_CUDA;
     constexpr auto prefBackend = cv::dnn::DNN_BACKEND_CUDA;
-    cv::dnn::Net yolo = cv::dnn::readNet("/home/mattiasba/git/LearningOpenCV/src/yolo/yolov3.weights",
-                                         "/home/mattiasba/git/LearningOpenCV/src/yolo/yolov3.cfg" );
+    const std::string yoloNet = "yolov3";
+    const std::string yoloPath = std::filesystem::path(__FILE__).remove_filename().string()+"yolo/";
+    const std::string weightPath = yoloPath+yoloNet+".weights";
+    const std::string cfgPath = yoloPath+yoloNet+".cfg";
+    const std::string classFilePath = yoloPath+yoloNet+"_classes.txt";
+    cv::dnn::Net yolo = cv::dnn::readNet(weightPath, cfgPath);
     yolo.setPreferableBackend(prefBackend);
     yolo.setPreferableTarget(prefTarget);
     const std::vector<std::string> outNames = yolo.getUnconnectedOutLayersNames();
 
-    std::string classFile = "/home/mattiasba/git/LearningOpenCV/src/yolo/yolov3_classes.txt";
-    std::ifstream ifs(classFile.c_str());
+
+    std::ifstream ifs(classFilePath.c_str());
     if (!ifs.is_open())
-        CV_Error(cv::Error::StsError, "File " + classFile + " not found");
+    {
+        CV_Error(cv::Error::StsError, "File " + classFilePath + " not found");
+    }
     std::string line;
     std::vector<std::string> classNames;
     while (std::getline(ifs, line))
