@@ -11,31 +11,6 @@
 #include "ObjectTrackerFactory.h"
 #include "ObjectTrackerHandler.h"
 
-inline void preprocess(const cv::Mat& frame, cv::dnn::Net& net, cv::Size inpSize, float scale,
-                       const cv::Scalar& mean, bool swapRB)
-{
-    static cv::Mat blob;
-    // Create a 4D blob from a frame.
-    if (inpSize.width <= 0)
-    {
-        inpSize.width = frame.cols;
-    }
-    if (inpSize.height <= 0)
-    {
-        inpSize.height = frame.rows;
-    }
-    cv::dnn::blobFromImage(frame, blob, 1.0, inpSize, cv::Scalar(), swapRB, false, CV_8U);
-
-    // Run a model.
-    net.setInput(blob, "", scale, mean);
-    if (net.getLayer(0)->outputNameToIndex("im_info") != -1)  // Faster-RCNN or R-FCN
-    {
-        resize(frame, frame, inpSize);
-        cv::Mat imInfo = (cv::Mat_<float>(1, 3) << inpSize.height, inpSize.width, 1.6f);
-        net.setInput(imInfo, "im_info");
-    }
-}
-
 void drawPred(int classId, float conf, int left, int top, int right, int bottom, cv::Mat& frame, const std::vector<std::string>& classes)
 {
     rectangle(frame, cv::Point(left, top), cv::Point(right, bottom), cv::Scalar(0, 255, 0));
@@ -58,7 +33,7 @@ void drawPred(int classId, float conf, int left, int top, int right, int bottom,
 
 void postprocess(cv::Mat& frame, const std::vector<cv::Mat>& outs, cv::dnn::Net& net, int backend, const std::vector<std::string>& classes)
 {
-    constexpr float confThreshold = 0.5;
+    constexpr float confThreshold = 0.75;
     constexpr float nmsThreshold = 0.4;
 
     static std::vector<int> outLayers = net.getUnconnectedOutLayers();
@@ -241,7 +216,7 @@ int main() {
     // Setup the yolo network
     constexpr auto prefTarget = cv::dnn::DNN_TARGET_CUDA;
     constexpr auto prefBackend = cv::dnn::DNN_BACKEND_CUDA;
-    const std::string yoloNet = "yolov3";
+    const std::string yoloNet = "yolov4";
     const std::string yoloPath = std::filesystem::path(__FILE__).remove_filename().string()+"yolo/";
     const std::string weightPath = yoloPath+yoloNet+".weights";
     const std::string cfgPath = yoloPath+yoloNet+".cfg";
@@ -249,8 +224,6 @@ int main() {
     cv::dnn::Net yolo = cv::dnn::readNet(weightPath, cfgPath);
     yolo.setPreferableBackend(prefBackend);
     yolo.setPreferableTarget(prefTarget);
-    const std::vector<std::string> outNames = yolo.getUnconnectedOutLayersNames();
-
 
     std::ifstream ifs(classFilePath.c_str());
     if (!ifs.is_open())
@@ -297,13 +270,12 @@ int main() {
     constexpr size_t asyncNumReq = 0;
     constexpr int inpWidth = 416;
     constexpr int inpHeight = 416;
-    constexpr float scaleFactor = 0.00392;
+    constexpr float scaleFactor = 1./255.;
     constexpr bool swapRB = true;
-    const cv::Scalar mean = {0., 0., 0.};
+    const std::vector<std::string> outNames = yolo.getUnconnectedOutLayersNames();
     QueueFPS<cv::Mat> processedFramesQueue;
     QueueFPS<std::vector<cv::Mat> > predictionsQueue;
     std::thread processingThread([&](){
-        std::queue<cv::AsyncArray> futureOutputs;
         cv::Mat blob;
         while (process)
         {
@@ -313,42 +285,24 @@ int main() {
                 if (!framesQueue.empty())
                 {
                     frame = framesQueue.get();
-                    if (asyncNumReq)
-                    {
-                        if (futureOutputs.size() == asyncNumReq)
-                            frame = cv::Mat();
-                    }
-                    else
-                        framesQueue.clear();  // Skip the rest of frames
+                    framesQueue.clear();  // Skip the rest of frames
                 }
             }
 
             // Process the frame
             if (!frame.empty())
             {
-                preprocess(frame, yolo, cv::Size(inpWidth, inpHeight), scaleFactor, mean, swapRB);
+                // Create a 4D blob from a frame.
+                static cv::Mat blob;
+                cv::dnn::blobFromImage(frame, blob, scaleFactor, cv::Size(inpWidth,inpHeight),
+                                       cv::Scalar(0.,0.,0.), swapRB, false);
+                // Run a model.
+                yolo.setInput(blob);
                 processedFramesQueue.push(frame);
 
-                if (asyncNumReq)
-                {
-                    futureOutputs.push(yolo.forwardAsync());
-                }
-                else
-                {
-                    std::vector<cv::Mat> outs;
-                    yolo.forward(outs, outNames);
-                    predictionsQueue.push(outs);
-                }
-            }
-
-            while (!futureOutputs.empty() &&
-                   futureOutputs.front().wait_for(std::chrono::seconds(0)))
-            {
-                cv::AsyncArray async_out = futureOutputs.front();
-                futureOutputs.pop();
-                cv::Mat out;
-                async_out.get(out);
-                predictionsQueue.push({out});
+                std::vector<cv::Mat> outs;
+                yolo.forward(outs, outNames);
+                predictionsQueue.push(outs);
             }
         }
     });
@@ -358,7 +312,9 @@ int main() {
     while (cv::waitKey(1) != ESC)
     {
         if (predictionsQueue.empty())
+        {
             continue;
+        }
 
         std::vector<cv::Mat> outs = predictionsQueue.get();
         cv::Mat frame = processedFramesQueue.get();
