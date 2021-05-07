@@ -14,7 +14,7 @@ void ObjectTrackerHandler::stopTracking()
 
 cv::Rect ObjectTrackerHandler::update(const cv::Mat& image)
 {
-    cv::Rect2d bbox;
+    cv::Rect bbox;
     if (not Tracking)
     {
         std::cout << "Not currently tracking an object." << std::endl;
