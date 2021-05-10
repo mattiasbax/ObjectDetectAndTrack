@@ -4,7 +4,6 @@
 [submodule "ext/matplotlibcpp"]
 	path = ext/matplotlibcpp
 	url = https://github.com/lava/matplotlib-cpp.git
-	ignore = dirty
 [submodule "ext/opencv"]
 	path = ext/opencv
 	url = https://github.com/opencv/opencv.git
