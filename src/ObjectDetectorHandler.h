@@ -2,17 +2,12 @@
 
 #include <opencv2/core.hpp>
 #include <opencv2/dnn/dnn.hpp>
-//#include <map>
-//#include <utility>
-
+#include <utility>
+#include "CommonTypes.h"
 
 class ObjectDetectorHandler
 {
 public:
-    //enum class SizeType
-    //{
-    //    Medium,
-    //};
 
     struct Parameters
     {
@@ -26,17 +21,10 @@ public:
         cv::Scalar Mean;
     };
 
-    struct ObjectDetection
-    {
-        int classId;
-        double confidence;
-        cv::Rect boundingBox;
-    };
-
-    explicit ObjectDetectorHandler(std::string&& yoloName, Parameters parameters = {0.75, 0.4, cv::dnn::DNN_BACKEND_CUDA,
+    explicit ObjectDetectorHandler(std::string&& yoloName, Parameters&& parameters = {0.75, 0.4, cv::dnn::DNN_BACKEND_CUDA,
                                                                 cv::dnn::DNN_TARGET_CUDA,
                                                                 1./255., true, {412, 412}, {0.,0.,0.}}) : YoloName(std::move(yoloName)),
-                                                    Param(parameters),
+                                                    Param(std::move(parameters)),
                                            Initialized(false), ClassNames{}, OutLayerNames{} {}
     bool init();
 
@@ -50,12 +38,4 @@ private:
     cv::dnn::Net Yolo;
     std::vector<std::string> ClassNames;
     std::vector<std::string> OutLayerNames;
-
-    //const std::map<SizeType, cv::Size> SizeMap;
-    //static std::map<SizeType,cv::Size> createMap()
-    //{
-    //    std::map<SizeType,cv::Size> m;
-    //    m[SizeType::Medium] = cv::Size(412,412);
-    //    return m;
-    //}
 };

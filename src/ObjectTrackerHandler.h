@@ -1,18 +1,19 @@
 #pragma once
 #include <memory>
 #include <opencv2/tracking/tracking.hpp>
+#include "ObjectTrackerFactory.h"
+#include "CommonTypes.h"
 
 class ObjectTrackerHandler {
 public:
     struct Parameters
     {
+        std::vector<int> ClassesToTrack;
     };
-    explicit ObjectTrackerHandler(const cv::Ptr<cv::Tracker> tracker, const Parameters& parameters = {}) : Tracker(tracker), Param(parameters), Tracking(false) {};
-    void startTracking(const cv::Mat& image, const cv::Rect& bbox);
-    void stopTracking();
-    cv::Rect update(const cv::Mat& image);
+    explicit ObjectTrackerHandler(const ObjectTrackerFactory::TrackerType trackerType, Parameters&& parameters = {{0}}) : Otf(trackerType), Param(parameters) {};
+    [[nodiscard]] std::vector<ObjectDetection> trackObjects(const std::vector<ObjectDetection>& objectDetections);
 private:
-    const cv::Ptr<cv::Tracker> Tracker;
+    const ObjectTrackerFactory Otf;
+    const std::vector<cv::Ptr<cv::Tracker>> Tracker;
     const Parameters Param;
-    bool Tracking;
 };

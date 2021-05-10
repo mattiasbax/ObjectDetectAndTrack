@@ -5,37 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
-using ObjectDetection = ObjectDetectorHandler::ObjectDetection;
-
 namespace
 {
-    /*
-    for (const auto& objectDetection : objectDetectionsNMS)
-    {
-        const cv::Rect& box = objectDetection.boundingBox;
-        drawPred(objectDetection.classId, objectDetection.confidence, box.x, box.y,
-        box.x + box.width, box.y + box.height, frame, classes);
-    }
-    void drawPred(const int classId, const float conf, const int left, const int top,const int right, const int bottom, const cv::Mat& frame, const std::vector<std::string>& classes)
-    {
-        rectangle(frame, cv::Point(left, top), cv::Point(right, bottom), cv::Scalar(0, 255, 0));
-
-        std::string label = cv::format("%.2f", conf);
-        if (!classes.empty())
-        {
-            CV_Assert(classId < (int)classes.size());
-            label = classes[classId] + ": " + label;
-        }
-
-        int baseLine;
-        cv::Size labelSize = getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-
-        top = cv::max(top, labelSize.height);
-        rectangle(frame, cv::Point(left, top - labelSize.height),
-                  cv::Point(left + labelSize.width, top + baseLine), cv::Scalar::all(255), cv::FILLED);
-        putText(frame, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar());
-    }
-*/
     std::vector<ObjectDetection> nonMaxSupressDetections(const float confThreshold, const float nmsThreshold, std::vector<ObjectDetection>&& objectDetections)
     {
         // Map where each key represents a class and the vector the detection belonging to that class
