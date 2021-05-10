@@ -14,10 +14,10 @@ public:
         CSRT,
     };
 
-    explicit ObjectTrackerFactory(TrackerType trackerType)
+    explicit ObjectTrackerFactory(const TrackerType trackerType)
             : trackerType(trackerType) {}
 
-    cv::Ptr<cv::Tracker> getTracker() const;
+    [[nodiscard]] cv::Ptr<cv::Tracker> getTracker() const;
 private:
     TrackerType trackerType;
 };

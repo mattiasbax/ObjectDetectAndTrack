@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 
 set(EXECUTABLE_NAME ${PROJECT_NAME}_app_tests)
 add_executable(${EXECUTABLE_NAME} src/main.cpp
-                                  src/ApplicationTests.cpp
+        src/ObjectDetectorHandlerTests.cpp
         )
 
 target_include_directories(${EXECUTABLE_NAME}
@@ -15,5 +15,5 @@ target_link_directories(${EXECUTABLE_NAME}
                         PRIVATE  ${PROJECT_SOURCE_DIR}/ext/googletest/googletest/src
                         PRIVATE  ${PROJECT_SOURCE_DIR}/ext/googletest/googletest/src)
 
-target_link_libraries(${EXECUTABLE_NAME} gtest_main matplotlib_cpp)
+target_link_libraries(${EXECUTABLE_NAME} gtest_main matplotlib_cpp opencv_core opencv_highgui opencv_imgcodecs opencv_tracking opencv_dnn)
 #add_test(NAME example_test COMMAND ${PROJECT_NAME}_app_tests)

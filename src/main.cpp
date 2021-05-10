@@ -10,6 +10,9 @@
 #include <filesystem>
 #include "ObjectTrackerFactory.h"
 #include "ObjectTrackerHandler.h"
+#include "ObjectDetectorHandler.h"
+
+//#define THREADED
 
 void drawPred(int classId, float conf, int left, int top, int right, int bottom, cv::Mat& frame, const std::vector<std::string>& classes)
 {
@@ -31,6 +34,7 @@ void drawPred(int classId, float conf, int left, int top, int right, int bottom,
     putText(frame, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar());
 }
 
+#ifdef THREADED
 struct ObjectDetection
 {
     int classId;
@@ -166,9 +170,19 @@ private:
     cv::TickMeter tm;
     std::mutex mutex;
 };
-
+#endif
 
 int main() {
+    // Activate the camera
+    cv::VideoCapture camera(0);
+    if (!camera.isOpened())
+    {
+        std::cout << "Cannot open camera feed!" << std::endl;
+        return 1;
+    }
+
+
+#ifdef THREADED
     // Setup the yolo network
     constexpr auto prefTarget = cv::dnn::DNN_TARGET_CUDA;
     constexpr auto prefBackend = cv::dnn::DNN_BACKEND_CUDA;
@@ -192,16 +206,6 @@ int main() {
     {
         classNames.push_back(line);
     }
-
-
-    // Activate the camera
-    cv::VideoCapture camera(0);
-    if (!camera.isOpened())
-    {
-        std::cout << "Cannot open camera feed!" << std::endl;
-        return 1;
-    }
-
 
     // Create a window
     static const std::string kWinName = "Deep learning object detection in OpenCV";
@@ -299,11 +303,39 @@ int main() {
     //const ObjectTrackerFactory otf(ObjectTrackerFactory::TrackerType::KCF);
     //ObjectTrackerHandler oth(otf.getTracker(), ObjectTrackerHandler::Parameters());
 
-    // Frame loop
-    //while (camera.read(frame) && (cv::waitKey(1) != ESC))
-    //{
+#endif
+#ifndef THREADED
+    constexpr int ESC = 27;
+    static const std::string kWinName = "Deep learning object detection in OpenCV";
+    namedWindow(kWinName, cv::WINDOW_NORMAL);
 
-    //}
+    // Frame loop
+    ObjectDetectorHandler odh("yolov4");
+    const ObjectTrackerFactory otf(ObjectTrackerFactory::TrackerType::CSRT);
+    ObjectTrackerHandler oth(otf.getTracker());
+
+    odh.init();
+    const std::vector<std::string>& classNames = odh.getClassNames();
+
+    cv::Mat frame;
+    while (camera.read(frame) && (cv::waitKey(1) != ESC))
+    {
+        std::vector<ObjectDetectorHandler::ObjectDetection> objectDetections = odh.detectObjects(frame);
+
+
+
+        for (const auto& objectDetection : objectDetections)
+        {
+            const cv::Rect& box = objectDetection.boundingBox;
+            drawPred(objectDetection.classId, objectDetection.confidence, box.x, box.y,
+            box.x + box.width, box.y + box.height, frame, classNames);
+        }
+
+
+
+        imshow(kWinName, frame);
+    }
+#endif
 
     // Close all windows
     cv::destroyAllWindows();
