@@ -1,7 +1,7 @@
 #include <iostream>
 #include "ObjectTrackerFactory.h"
 
-cv::Ptr<cv::Tracker> ObjectTrackerFactory::getTracker() const
+cv::Ptr<cv::Tracker> ObjectTrackerFactory::createTracker() const
 {
     cv::Ptr<cv::Tracker> tracker;
     switch (trackerType)

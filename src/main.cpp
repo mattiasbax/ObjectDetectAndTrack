@@ -1,32 +1,11 @@
 #include <iostream>
 #include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
 #include "ObjectTrackerHandler.h"
 #include "ObjectDetectorHandler.h"
 #include "CommonTypes.h"
-
-void drawPred(int classId, float conf, int left, int top, int right, int bottom, cv::Mat& frame, const std::vector<std::string>& classes)
-{
-    rectangle(frame, cv::Point(left, top), cv::Point(right, bottom), cv::Scalar(0, 255, 0));
-
-    std::string label = cv::format("%.2f", conf);
-    if (!classes.empty())
-    {
-        CV_Assert(classId < (int)classes.size());
-        label = classes[classId] + ": " + label;
-    }
-
-    int baseLine;
-    cv::Size labelSize = getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-
-    top = cv::max(top, labelSize.height);
-    rectangle(frame, cv::Point(left, top - labelSize.height),
-              cv::Point(left + labelSize.width, top + baseLine), cv::Scalar::all(255), cv::FILLED);
-    putText(frame, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar());
-}
+#include "ImageDrawUtils.h"
 
 int main() {
     // Activate the camera
@@ -41,9 +20,8 @@ int main() {
     static const std::string kWinName = "Object Detection and Tracking demo";
     namedWindow(kWinName, cv::WINDOW_AUTOSIZE);
 
-
     ObjectDetectorHandler odh("yolov4");
-    ObjectTrackerHandler oth(ObjectTrackerFactory::TrackerType::CSRT);
+    ObjectTrackerHandler oth(ObjectTrackerFactory::TrackerType::KCF);
 
     odh.init();
     const std::vector<std::string>& classNames = odh.getClassNames();
@@ -53,15 +31,27 @@ int main() {
     while (camera.read(frame) && (cv::waitKey(1) != ESC))
     {
         const std::vector<ObjectDetection> objectDetections = odh.detectObjects(frame);
-        //const std::vector<ObjectDetection> trackedObjects = oth.trackObjects(objectDetections);
+        const std::vector<ObjectDetection> trackedObjects = oth.trackObjects(frame, objectDetections);
 
         for (const auto& objectDetection : objectDetections)
         {
             const cv::Rect& box = objectDetection.boundingBox;
-            drawPred(objectDetection.classId, objectDetection.confidence, box.x, box.y,
-            box.x + box.width, box.y + box.height, frame, classNames);
+            ImageDrawUtils::drawObjectsInImage(objectDetection.classId, static_cast<float>(objectDetection.confidence), box.x, box.y,
+            box.x + box.width, box.y + box.height, frame, {255,0,0}, classNames);
         }
 
+        for (const auto& trackedObject : trackedObjects)
+        {
+            const cv::Rect& box = trackedObject.boundingBox;
+            ImageDrawUtils::drawObjectsInImage(trackedObject.classId, static_cast<float>(trackedObject.confidence), box.x, box.y,
+                     box.x + box.width, box.y + box.height, frame, {0,255,0}, classNames);
+        }
+
+
+        // TODO: Draw helper class
+        // TODO: Filter on only selected classes
+        // TODO: Thread the detector
+        // TODO: Smaller Yolo net
         imshow(kWinName, frame);
     }
 

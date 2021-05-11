@@ -17,7 +17,7 @@ public:
     explicit ObjectTrackerFactory(const TrackerType trackerType)
             : trackerType(trackerType) {}
 
-    [[nodiscard]] cv::Ptr<cv::Tracker> getTracker() const;
+    [[nodiscard]] cv::Ptr<cv::Tracker> createTracker() const;
 private:
     TrackerType trackerType;
 };
