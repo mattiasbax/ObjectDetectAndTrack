@@ -7,7 +7,6 @@ add_executable( ${EXECUTABLE_NAME}  main.cpp
         ObjectTrackerFactory.cpp
         ObjectDetectorHandler.cpp
         ObjectDetectorHandler.cpp
-        ImageDrawUtils.cpp
         ImageDrawUtils.cpp)
 
 target_link_libraries(${EXECUTABLE_NAME} opencv_core opencv_highgui opencv_imgcodecs opencv_tracking opencv_dnn)

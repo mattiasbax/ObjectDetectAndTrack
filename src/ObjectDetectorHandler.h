@@ -29,7 +29,7 @@ public:
     bool init();
 
     [[nodiscard]] const std::vector<std::string>& getClassNames() const;
-    [[nodiscard]] std::vector<ObjectDetection> detectObjects(const cv::Mat& image);
+    [[nodiscard]] std::vector<Object> detectObjects(const cv::Mat& image);
 
 private:
     const Parameters Param;

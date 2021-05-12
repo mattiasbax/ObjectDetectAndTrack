@@ -5,26 +5,28 @@ namespace
 {
 }
 
-void ObjectTrackerHandler::createNewTracker(const cv::Mat& image, const ObjectDetection& object)
+void ObjectTrackerHandler::createNewTracker(const cv::Mat& image, const Object& detectedObject)
 {
     if (TrackedObjects.size() < Param.MaxNumberOfTrackedObjects)
     {
-        if (std::find(Param.ClassesToTrack.begin(), Param.ClassesToTrack.end(), object.classId) != Param.ClassesToTrack.end())
+        if (std::find(Param.ClassesToTrack.begin(), Param.ClassesToTrack.end(), detectedObject.classId) != Param.ClassesToTrack.end())
         {
             std::cout << "Creating a new tracker" << std::endl;
-            TrackedObjects.push_back({Otf.createTracker(), object});
-            TrackedObjects.back().Tracker->init(image, object.boundingBox);
+            Object trackedObject = detectedObject;
+            trackedObject.identity = "Mattias";
+            TrackedObjects.push_back({Otf.createTracker(), trackedObject});
+            TrackedObjects.back().Tracker->init(image, trackedObject.boundingBox);
         }
     }
 }
 
 
-bool ObjectTrackerHandler::isObjectAlreadyTracked(const ObjectDetection& object) const
+bool ObjectTrackerHandler::isObjectAlreadyTracked(const Object& object) const
 {
     bool isAlreadyTracked = false;
     for (const auto& trackedObject : TrackedObjects)
     {
-        if (object.classId != trackedObject.Object.classId)
+        if (object.classId != trackedObject.TrackedObject.classId)
         {
             continue;
         }
@@ -33,7 +35,7 @@ bool ObjectTrackerHandler::isObjectAlreadyTracked(const ObjectDetection& object)
     return isAlreadyTracked;
 }
 
-std::vector<ObjectDetection> ObjectTrackerHandler::trackObjects(const cv::Mat& image, const std::vector<ObjectDetection>& objectDetections)
+std::vector<Object> ObjectTrackerHandler::trackObjects(const cv::Mat& image, const std::vector<Object>& objectDetections)
 {
     for (const auto& objectDetection : objectDetections)
     {
@@ -44,13 +46,13 @@ std::vector<ObjectDetection> ObjectTrackerHandler::trackObjects(const cv::Mat& i
         }
     }
 
-    std::vector<ObjectDetection> trackedObjects;
+    std::vector<Object> trackedObjects;
     for (auto& trackedObject : TrackedObjects)
     {
-        const bool objectFound = trackedObject.Tracker->update(image, trackedObject.Object.boundingBox);
+        const bool objectFound = trackedObject.Tracker->update(image, trackedObject.TrackedObject.boundingBox);
         if (objectFound)
         {
-            trackedObjects.push_back(trackedObject.Object);
+            trackedObjects.push_back(trackedObject.TrackedObject);
         }
     }
 

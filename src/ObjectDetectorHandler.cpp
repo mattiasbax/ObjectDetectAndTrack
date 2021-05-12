@@ -7,7 +7,7 @@
 
 namespace
 {
-    std::vector<ObjectDetection> nonMaxSupressDetections(const float confThreshold, const float nmsThreshold, std::vector<ObjectDetection>&& objectDetections)
+    std::vector<Object> nonMaxSupressDetections(const float confThreshold, const float nmsThreshold, std::vector<Object>&& objectDetections)
     {
         // Map where each key represents a class and the vector the detection belonging to that class
         std::map<int, std::vector<size_t>> classSets;
@@ -17,7 +17,7 @@ namespace
             classSets[objectDetection.classId].push_back(counter);
             counter++;
         }
-        std::vector<ObjectDetection> objectDetectionsNMS;
+        std::vector<Object> objectDetectionsNMS;
         for (const auto& classSet : classSets)
         {
             const std::vector<size_t>& detectionIndices = classSet.second;
@@ -42,10 +42,10 @@ namespace
     }
 
 
-    std::vector<ObjectDetection> postprocess(const float confThreshold, const float nmsThreshold, const cv::Mat& frame, const std::vector<cv::Mat>& outs, cv::dnn::Net& net, const std::vector<std::string>& classes)
+    std::vector<Object> postprocess(const float confThreshold, const float nmsThreshold, const cv::Mat& frame, const std::vector<cv::Mat>& outs, cv::dnn::Net& net, const std::vector<std::string>& classes)
     {
         std::vector<int> outLayers = net.getUnconnectedOutLayers();
-        std::vector<ObjectDetection> objectDetections;
+        std::vector<Object> objectDetections;
 
         for (size_t i = 0; i < outs.size(); ++i)
         {
@@ -70,7 +70,7 @@ namespace
 
                     if (confidence >= confThreshold)
                     {
-                        objectDetections.push_back({classIdPoint.x, confidence, cv::Rect(left, top, width, height)});
+                        objectDetections.push_back({classIdPoint.x, "", confidence, cv::Rect(left, top, width, height)});
                     }
                 }
             }
@@ -119,17 +119,17 @@ bool ObjectDetectorHandler::init()
 }
 
 
-std::vector<ObjectDetection> ObjectDetectorHandler::detectObjects(const cv::Mat& image)
+std::vector<Object> ObjectDetectorHandler::detectObjects(const cv::Mat& image)
 {
     if (not Initialized)
     {
         std::cout << "ERROR: Not initialized." << std::endl;
-        return std::vector<ObjectDetection>{};
+        return std::vector<Object>{};
     }
     if (image.empty())
     {
         std::cout << "ERROR: Cannot do detection on empty image." << std::endl;
-        return std::vector<ObjectDetection>{};
+        return std::vector<Object>{};
     }
 
     // Create a 4D blob from a frame.

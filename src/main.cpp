@@ -30,21 +30,17 @@ int main() {
     cv::Mat frame;
     while (camera.read(frame) && (cv::waitKey(1) != ESC))
     {
-        const std::vector<ObjectDetection> objectDetections = odh.detectObjects(frame);
-        const std::vector<ObjectDetection> trackedObjects = oth.trackObjects(frame, objectDetections);
+        const std::vector<Object> objectDetections = odh.detectObjects(frame);
+        const std::vector<Object> trackedObjects = oth.trackObjects(frame, objectDetections);
 
         for (const auto& objectDetection : objectDetections)
         {
-            const cv::Rect& box = objectDetection.boundingBox;
-            ImageDrawUtils::drawObjectsInImage(objectDetection.classId, static_cast<float>(objectDetection.confidence), box.x, box.y,
-            box.x + box.width, box.y + box.height, frame, {255,0,0}, classNames);
+            ImageDrawUtils::drawObjectsInImage(objectDetection, classNames, frame, {255,0,0}, ImageDrawUtils::ObjectType::Detection);
         }
 
         for (const auto& trackedObject : trackedObjects)
         {
-            const cv::Rect& box = trackedObject.boundingBox;
-            ImageDrawUtils::drawObjectsInImage(trackedObject.classId, static_cast<float>(trackedObject.confidence), box.x, box.y,
-                     box.x + box.width, box.y + box.height, frame, {0,255,0}, classNames);
+            ImageDrawUtils::drawObjectsInImage(trackedObject, classNames, frame, {0,255,0}, ImageDrawUtils::ObjectType::Tracked);
         }
 
 
