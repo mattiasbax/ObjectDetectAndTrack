@@ -30,6 +30,7 @@ int main() {
     cv::Mat frame;
     while (camera.read(frame) && (cv::waitKey(1) != ESC))
     {
+        //const std::vector<Object> objectDetections = (oth.numberOfTrackedObjects() == 0) ? odh.detectObjects(frame) : std::vector<Object>{};
         const std::vector<Object> objectDetections = odh.detectObjects(frame);
         const std::vector<Object> trackedObjects = oth.trackObjects(frame, objectDetections);
 
@@ -43,11 +44,11 @@ int main() {
             ImageDrawUtils::drawObjectsInImage(trackedObject, classNames, frame, {0,255,0}, ImageDrawUtils::ObjectType::Tracked);
         }
 
-
-        // TODO: Draw helper class
         // TODO: Filter on only selected classes
         // TODO: Thread the detector
         // TODO: Smaller Yolo net
+        // TODO: Valgrind https://www.youtube.com/watch?v=3l0BQs2ThTo&ab_channel=C%E1%90%A9%E1%90%A9WeeklyWithJasonTurner
+        // TODO: Callgrind https://waterprogramming.wordpress.com/2017/06/08/profiling-c-code-with-callgrind/
         imshow(kWinName, frame);
     }
 

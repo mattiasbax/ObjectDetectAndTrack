@@ -13,8 +13,11 @@ cv::Ptr<cv::Tracker> ObjectTrackerFactory::createTracker() const
             tracker = cv::TrackerGOTURN::create();
             break;
         case TrackerType::KCF:
+        {
+            cv::TrackerKCF::Params para;
             tracker = cv::TrackerKCF::create();
             break;
+        }
         case TrackerType::CSRT:
             tracker = cv::TrackerCSRT::create();
             break;

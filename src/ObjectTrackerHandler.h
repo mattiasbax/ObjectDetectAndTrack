@@ -1,18 +1,26 @@
 #pragma once
 #include <memory>
 #include <opencv2/tracking/tracking.hpp>
+#include <utility>
 #include "ObjectTrackerFactory.h"
 #include "CommonTypes.h"
 
-class ObjectTrackerHandler {
+class ObjectTrackerHandler
+{
 public:
     struct Parameters
     {
-        unsigned int MaxNumberOfTrackedObjects;
-        std::vector<int> ClassesToTrack;
+        Parameters() {} // NOLINT(modernize-use-equals-default)
+        unsigned int MaxNumberOfTrackedObjects = 1;
+        std::vector<int> ClassesToTrack = {1};
     };
-    explicit ObjectTrackerHandler(const ObjectTrackerFactory::TrackerType trackerType, Parameters&& parameters = {1,{0}}) : Otf(trackerType), Param(parameters) {};
+
+    explicit ObjectTrackerHandler(const ObjectTrackerFactory::TrackerType trackerType, Parameters&&  parameters = Parameters()) :
+                                    Otf(trackerType), Param(std::move(parameters)) {};
+
     [[nodiscard]] std::vector<Object> trackObjects(const cv::Mat& image, const std::vector<Object>& objectDetections);
+    [[nodiscard]] size_t numberOfTrackedObjects() const;
+
 private:
     struct TrackedObject
     {

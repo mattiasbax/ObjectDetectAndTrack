@@ -8,26 +8,23 @@
 class ObjectDetectorHandler
 {
 public:
-
     struct Parameters
     {
-        float ConfThreshold;
-        float NmsThreshold;
-        int preferredBackend;
-        int preferredTarget;
-        float ScaleFactor;
-        bool SwapRGB;
-        cv::Size InputSize;
-        cv::Scalar Mean;
+        Parameters() {}; // NOLINT(modernize-use-equals-default)
+        float ConfThreshold = 0.75;
+        float NmsThreshold = 0.4;
+        int preferredBackend = cv::dnn::DNN_BACKEND_CUDA;
+        int preferredTarget = cv::dnn::DNN_TARGET_CUDA;
+        float ScaleFactor = 1./255.;
+        bool SwapRGB = true;
+        cv::Size InputSize = {412, 412};
+        cv::Scalar Mean = {0., 0., 0.};
     };
 
-    explicit ObjectDetectorHandler(std::string&& yoloName, Parameters&& parameters = {0.75, 0.4, cv::dnn::DNN_BACKEND_CUDA,
-                                                                cv::dnn::DNN_TARGET_CUDA,
-                                                                1./255., true, {412, 412}, {0.,0.,0.}}) : YoloName(std::move(yoloName)),
-                                                    Param(std::move(parameters)),
-                                           Initialized(false), ClassNames{}, OutLayerNames{} {}
+    explicit ObjectDetectorHandler(std::string&& yoloName, Parameters&& parameters = Parameters()) :
+                                    YoloName(std::move(yoloName)), Param(std::move(parameters)),
+                                    Initialized(false), ClassNames{}, OutLayerNames{} {}
     bool init();
-
     [[nodiscard]] const std::vector<std::string>& getClassNames() const;
     [[nodiscard]] std::vector<Object> detectObjects(const cv::Mat& image);
 

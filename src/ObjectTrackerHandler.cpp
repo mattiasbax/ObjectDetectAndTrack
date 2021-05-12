@@ -58,3 +58,8 @@ std::vector<Object> ObjectTrackerHandler::trackObjects(const cv::Mat& image, con
 
     return trackedObjects;
 }
+
+size_t ObjectTrackerHandler::numberOfTrackedObjects() const
+{
+    return TrackedObjects.size();
+}
